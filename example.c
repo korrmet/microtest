@@ -13,7 +13,12 @@ int main(int argc, char** argv)
   MT_END()
 
   MT_START("sample error")
+    MT_PRINT("error, but ok");
+  MT_END()
+  
+  MT_START("sample error")
     err = 1;
+    MT_PRINT("error, but not ok");
   MT_END()
 
-  MT_CHECK(); }
+  MT_SUMMARY(); }
