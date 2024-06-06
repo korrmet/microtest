@@ -1,0 +1,4 @@
+example/*.o
+example/main
+example/example.test
+example/example.test_passed

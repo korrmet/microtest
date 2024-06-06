@@ -8,15 +8,11 @@
 #endif
 
 #ifndef MT_WIDTH
-#define MT_WIDTH     80 ///< total width of tests output
+#define MT_WIDTH 80 ///< total width of tests output, you may define it yourself
 #endif
 
-#ifndef MT_DOT_SPACE
-#define MT_DOT_SPACE 1  ///< spacing between dotted line and symbols
-#endif
-
-#ifndef MT_INDENT
-#define MT_INDENT    2  ///< indention of test cases
+#if MT_WIDTH < 40
+#define MT_WIDTH 40
 #endif
 
 /** \brief   initializing of test input
@@ -26,7 +22,7 @@
  *               \note arguments will be passed to printf so it has similar 
  *                     format */
 #define MT_INIT(...)                                                           \
-  printf("testing module: ");                                                  \
+  printf("Testing ");                                                          \
   printf(__VA_ARGS__); printf("\n");                                           \
   unsigned int mt_testnum = 0;                                                 \
   unsigned int mt_testpass = 0;
@@ -40,13 +36,13 @@
  *               \note arguments will be passed to printf so it has similar 
  *                     format */
 #define MT_START(...)                                                          \
-{ unsigned int space_avail = MT_WIDTH;                                         \
-  for (unsigned int i = 0; i < MT_INDENT; i++) { printf(" "); space_avail--; } \
-  char namstr[MT_WIDTH] = { 0 }; snprintf(namstr, MT_WIDTH, __VA_ARGS__);      \
+{ int space_avail = MT_WIDTH;                                                  \
+  printf("  "); space_avail -= 2;                                              \
+  char namstr[MT_WIDTH] = { 0 }; snprintf(namstr, MT_WIDTH / 2, __VA_ARGS__);  \
   printf("%s", namstr); space_avail -= strlen(namstr);                         \
-  for (unsigned int i = 0; i < MT_DOT_SPACE; i++)                              \
-  { printf(" "); space_avail--; }                                              \
-  unsigned int err = 0; char retstr[MT_WIDTH] = { 0 }; 
+  printf(" "); space_avail--;                                                  \
+  unsigned int err = 0; char retstr[MT_WIDTH] = { 0 };                         \
+  mt_testnum++;
 
 /** \brief   print comment for test result
  *  \details comment will be displayed between dotted line and result of test
@@ -57,7 +53,17 @@
  *  \arg     ... comment body
  *               \note arguments will be passed to printf so it has similar
  *                     format */
-#define MT_PRINT(...) { snprintf(retstr, MT_WIDTH, __VA_ARGS__); }
+#define MT_PRINT(...) { snprintf(retstr, space_avail - 9, __VA_ARGS__); }
+
+/** \brief   check condition for registering erorr with message
+ *  \details if no additional message needed, put empty string literal as second
+ *           argument
+ *  \arg     con condition to check
+ *  \arg     ... comment body
+ *               \note arguments will be passed to printf so it has similar
+ *                     format */
+#define MT_ASSERT(con, ...)                                                    \
+  if (!err && (!(con))) { MT_PRINT(__VA_ARGS__); err = 1; }
 
 /** \brief   end of test case
  *  \details test case body must be placed between MT_START and MT_END macro.
@@ -66,7 +72,7 @@
   if (!err) { mt_testpass++; }                                                 \
   space_avail -= strlen(retstr);                                               \
   space_avail -= (strlen(retstr)) ? strlen(", ") : 0;                          \
-  space_avail -= MT_DOT_SPACE;                                                 \
+  space_avail -= 1;                                                            \
   space_avail -= (err) ? strlen("fail") : strlen("ok");                        \
   for (unsigned int i = 0; i < space_avail; i++) { printf("."); }              \
   printf(" %s", retstr);                                                       \
@@ -80,7 +86,7 @@
  *  \retval  0  all tests passed
  *  \retval  -1 some of tests not passed */
 #define MT_SUMMARY()                                                           \
-  printf("statistics: %d/%d passed\n", mt_testpass, mt_testnum);               \
+  printf("Summary: %d/%d passed\n", mt_testpass, mt_testnum);               \
   if (mt_testpass < mt_testnum) { return -1; } else { return 0; }
 
 #endif// MICROTEST_H
